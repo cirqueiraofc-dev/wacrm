@@ -167,6 +167,12 @@ export const RATE_LIMITS = {
    *  capping a stampede; excess inbounds simply don't get an auto-reply
    *  (they still land in the inbox for a human). */
   aiAutoReplyAccount: { limit: 30, windowMs: 60_000 },
+  /** File extraction (`/api/extract`), per user. Each call buffers and
+   *  parses an uploaded file — and for images spends a vision call on the
+   *  account's own LLM key — so 20/min is generous for interactive use
+   *  while bounding an accidental hold-down / script and the spend it
+   *  would drive. */
+  fileExtract: { limit: 20, windowMs: 60_000 },
 } as const;
 
 /** Test-only helper. Clears the in-memory state so unit tests don't
