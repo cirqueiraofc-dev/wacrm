@@ -13,6 +13,10 @@ import type { AiProvider } from './types'
 export const AI_PROVIDER_DEFAULT_MODEL: Record<AiProvider, string> = {
   openai: 'gpt-5.4-mini',
   anthropic: 'claude-haiku-4-5-20251001',
+  // Google Gemini has a genuinely free API tier (Google AI Studio key) —
+  // Flash is the fast, free-tier-eligible model, a good default for
+  // WhatsApp replies. Editable in the UI like the others.
+  google: 'gemini-2.0-flash',
 }
 
 /**

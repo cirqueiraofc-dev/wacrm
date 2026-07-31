@@ -1641,6 +1641,7 @@
       "testSuccess": "Key works — the provider responded.",
       "testRejected": "The provider rejected the request.",
       "testNetworkError": "Could not reach the provider.",
+      "googleKeyHint": "Get a free API key at <link>Google AI Studio</link> — no billing required.",
       "embeddingsKey": "Embeddings key",
       "optionalSemanticSearch": "(optional — enables semantic knowledge-base search)",
       "embeddingsHint": "An OpenAI key used only to embed your knowledge base (text-embedding-3-small){sameKeyText}. Leave blank to use keyword search instead. Clear it to turn semantic search off.",

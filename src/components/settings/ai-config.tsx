@@ -41,11 +41,13 @@ const HANDOFF_QUEUE = '__queue__';
 const PROVIDER_LABEL: Record<AiProvider, string> = {
   openai: 'OpenAI',
   anthropic: 'Anthropic (Claude)',
+  google: 'Google Gemini (free tier)',
 };
 
 const KEY_PLACEHOLDER: Record<AiProvider, string> = {
   openai: 'sk-...',
   anthropic: 'sk-ant-...',
+  google: 'AIza...',
 };
 
 export function AiConfig() {
@@ -131,6 +133,7 @@ export function AiConfig() {
     const isDefaultModel =
       model === AI_PROVIDER_DEFAULT_MODEL.openai ||
       model === AI_PROVIDER_DEFAULT_MODEL.anthropic ||
+      model === AI_PROVIDER_DEFAULT_MODEL.google ||
       model.trim() === '';
     if (isDefaultModel) setModel(AI_PROVIDER_DEFAULT_MODEL[next]);
   };
@@ -281,6 +284,7 @@ export function AiConfig() {
                     <SelectItem value="anthropic">
                       {PROVIDER_LABEL.anthropic}
                     </SelectItem>
+                    <SelectItem value="google">{PROVIDER_LABEL.google}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -345,6 +349,22 @@ export function AiConfig() {
                   {t('testKey')}
                 </Button>
               </div>
+              {provider === 'google' && (
+                <p className="text-xs text-muted-foreground">
+                  {t.rich('googleKeyHint', {
+                    link: (chunks) => (
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-foreground"
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                  })}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

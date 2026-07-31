@@ -192,3 +192,96 @@ describe('generateReply — Anthropic', () => {
     expect(body.messages).toHaveLength(1)
   })
 })
+
+describe('generateReply — Google (Gemini)', () => {
+  it('calls generateContent with the key header, systemInstruction + contents, and parses usage', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      okResponse({
+        candidates: [{ content: { parts: [{ text: 'Olá!' }] } }],
+        usageMetadata: {
+          promptTokenCount: 12,
+          candidatesTokenCount: 3,
+          totalTokenCount: 15,
+        },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const res = await generateReply({
+      config: config({ provider: 'google', model: 'gemini-2.0-flash', apiKey: 'g-key' }),
+      systemPrompt: 'sys',
+      messages: [{ role: 'user', content: 'Oi' }],
+    })
+
+    expect(res).toEqual({
+      text: 'Olá!',
+      handoff: false,
+      usage: { promptTokens: 12, completionTokens: 3, totalTokens: 15 },
+    })
+    const [url, opts] = fetchMock.mock.calls[0]
+    expect(url).toContain('generativelanguage.googleapis.com')
+    expect(url).toContain('gemini-2.0-flash:generateContent')
+    expect(opts.headers['x-goog-api-key']).toBe('g-key')
+    const body = JSON.parse(opts.body)
+    expect(body.systemInstruction.parts[0].text).toBe('sys')
+    expect(body.contents[0].role).toBe('user')
+  })
+
+  it('maps assistant turns to role "model" and drops a leading model turn', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okResponse({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+
+    await generateReply({
+      config: config({ provider: 'google' }),
+      systemPrompt: 'sys',
+      messages: [
+        { role: 'assistant', content: 'Bem-vindo!' },
+        { role: 'user', content: 'Oi' },
+        { role: 'assistant', content: 'Como ajudo?' },
+      ],
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+    // Leading assistant dropped; remaining assistant mapped to "model".
+    expect(body.contents[0].role).toBe('user')
+    expect(body.contents.map((c: { role: string }) => c.role)).toEqual(['user', 'model'])
+  })
+
+  it('maps an invalid key (HTTP 400 API_KEY_INVALID) to invalid_key/401', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        errResponse(400, {
+          error: { status: 'INVALID_ARGUMENT', message: 'API key not valid.' },
+        }),
+      ),
+    )
+    await expect(
+      generateReply({
+        config: config({ provider: 'google', apiKey: 'bad' }),
+        systemPrompt: 'sys',
+        messages: [{ role: 'user', content: 'Oi' }],
+      }),
+    ).rejects.toMatchObject({ code: 'invalid_key', status: 401 })
+  })
+
+  it('surfaces a safety block as a content_blocked error', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        okResponse({ candidates: [], promptFeedback: { blockReason: 'SAFETY' } }),
+      ),
+    )
+    await expect(
+      generateReply({
+        config: config({ provider: 'google' }),
+        systemPrompt: 'sys',
+        messages: [{ role: 'user', content: 'Oi' }],
+      }),
+    ).rejects.toMatchObject({ code: 'content_blocked' })
+  })
+})

@@ -1639,6 +1639,7 @@
       "testSuccess": "키가 정상 작동합니다 — 공급자가 응답했습니다.",
       "testRejected": "공급자가 요청을 거부했습니다.",
       "testNetworkError": "공급자에 연결할 수 없습니다.",
+      "googleKeyHint": "<link>Google AI Studio</link>에서 무료 API 키를 발급받으세요 — 결제가 필요하지 않습니다.",
       "embeddingsKey": "임베딩 키",
       "optionalSemanticSearch": "(선택 — 의미 기반 지식베이스 검색을 활성화합니다)",
       "embeddingsHint": "지식베이스를 임베딩하는 데만 사용되는 OpenAI 키입니다(text-embedding-3-small){sameKeyText}. 비워두면 키워드 검색을 사용합니다. 비우면 의미 기반 검색이 꺼집니다.",
